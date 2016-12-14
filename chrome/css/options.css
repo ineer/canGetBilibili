@@ -1,0 +1,45 @@
+/*!
+ * 
+ * Copyright 2016 Ineer
+ * Licensed under MIT (https://github.com/ineer/canGetBilibili/blob/master/LICENSE)
+ */
+
+@charset "UTF-8";
+ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+li {
+    margin: 0;
+    padding: 0;
+}
+a {
+    color: #000;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+.tabel {
+    width: 100%;
+    text-align: center;
+/*     border: solid #000 1px; */
+}
+
+.tabel-item {
+    display: inline-block;
+    width: 33%;
+    padding: 2px 0;
+}
+
+.bilibili-color1:nth-child(odd),
+.bilibili-color2:nth-child(even),
+.bilibili-color3:nth-child(odd) {
+    background-color: rgb(246, 138, 160);
+}
+
+#clearHistory {
+    margin-top: 2px;
+    margin-left: 6px;
+}
