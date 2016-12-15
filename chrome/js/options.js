@@ -5,7 +5,7 @@
  */
 
 var bgp          = chrome.extension.getBackgroundPage();
-var tempHTML     = '<li class="tabel-item bilibili-color1">视频av号</li><li class="tabel-item bilibili-color2">flv</li><li class="tabel-item bilibili-color3">mp4</li>';
+var tempHTML     = '<li class="tabel-item bilibili-color1">视频代号</li><li class="tabel-item bilibili-color2">flv</li><li class="tabel-item bilibili-color3">mp4</li>';
 var videoList    = document.getElementById('videoList');
 var clearHistory = document.getElementById('clearHistory');
 var getHelp      = document.getElementById('getHelp');
@@ -21,23 +21,37 @@ getHelp.onclick = function() {
     window.open('http://www.zhihu.com/people/ineer');
 };
 
+window.onfocus = function() {
+    bgp.isDownload = true;
+    bgp.tempName = '';
+};
+
 bgp.isDownload = true;
 
 function getVideoList() {
     for (var i in bgp.videoList) {
+        var tempFlv = '';
+        var tempMp4 = '';
         tempHTML += '<li class="tabel-item bilibili-color1">' + i + '</li>';
-        if (bgp.videoList[i]['flv']) {
-            tempHTML += '<li class="tabel-item bilibili-color2"><a href="' + bgp.videoList[i]['flv'] + '" download="' + i + '.flv">下载</a></li>';
-        } else {
-            tempHTML += '<li class="tabel-item bilibili-color2"> - </li>';
+        for (var j in bgp.videoList[i]) {
+            if (j.indexOf('flv') > -1) {
+                tempFlv += '<a href="' + bgp.videoList[i][j] + '" download="' + i + j.split('-')[2] + '.flv">[' + j.split('-')[2] + ']</a>';
+            }
+            if (j.indexOf('mp4') > -1) {
+                tempMp4 += '<a href="' + bgp.videoList[i][j] + '" download="' + i + j.split('-')[2] + '.mp4">[' + j.split('-')[2] + ']</a>';
+            }
         }
-        if (bgp.videoList[i]['mp4']) {
-            tempHTML += '<li class="tabel-item bilibili-color3"><a href="' + bgp.videoList[i]['mp4'] + '" download="' + i + '.mp4">下载</a></li>';
-        } else {
-            tempHTML += '<li class="tabel-item bilibili-color3"> - </li>';
+        if (tempFlv.length === 0) {
+            tempFlv = '-';
         }
+        if (tempMp4.length === 0) {
+            tempMp4 = '-';
+        }
+        tempHTML += '<li class="tabel-item bilibili-color2">' + tempFlv + '</li>' + '<li class="tabel-item bilibili-color3">' + tempMp4 + '</li>';
+        tempFlv = '';
+        tempMp4 = '';
     }
     
     videoList.innerHTML = tempHTML;
-    tempHTML = '<li class="tabel-item bilibili-color1">视频av号</li><li class="tabel-item bilibili-color2">flv</li><li class="tabel-item bilibili-color3">mp4</li>';
+    tempHTML = '<li class="tabel-item bilibili-color1">视频代号</li><li class="tabel-item bilibili-color2">flv</li><li class="tabel-item bilibili-color3">mp4</li>';
 }

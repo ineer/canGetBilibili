@@ -19,6 +19,7 @@ a {
     text-decoration: none;
 }
 a:hover {
+    color: rgb(246, 138, 160);
     text-decoration: underline;
 }
 .tabel {

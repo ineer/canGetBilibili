@@ -24,55 +24,57 @@ getStorage({videoList: {}, isFlv: true, isMp4: false, isTip: true}, function(ite
 getFilter(function(err) {
 	if (!err) {
 		chrome.webRequest.onBeforeRequest.addListener(function(request) {
+			
+			if (RegExp('av[0-9]*').test(request.url) || RegExp('anime/v').test(request.url)) {
+				isDownload = false;
+			}
 
+			if (isDownload) {
+				return;
+			}
 			if (RegExp('.swf').test(request.url)) {
 				isMp4 = false;
 				setStorage({isMp4: false}, function() {
 					
 				});
 			}
-			if (RegExp('av[0-9]*').test(request.url)) {
-				isDownload = false;
-			}
 
 		    if (isFlv || isMp4) {
 		    	if (RegExp('av[0-9]*').test(request.url)) {
-					tempName = RegExp('av[0-9]*').exec(request.url) 
-							 + (RegExp('_[0-9]*').test(request.url) ? tempName = RegExp('_[0-9]*').exec(request.url) : '');
+					tempName = RegExp('av[0-9]*').exec(request.url)[0]
+							 + (RegExp('_[0-9]*').test(request.url) ? tempName = RegExp('_[0-9]*').exec(request.url)[0] : '');
 					videoList[tempName] = {};
-				} else if (RegExp('.flv').test(request.url)) {
-					if (!videoList[tempName]['flv'] && isFlv) {
-						tempType = 'flv';
-						tempVideo = request.url;
-						videoList[tempName]['flv'] = tempVideo;
-						tempType = '';
-						tempVideo = '';
-						if (isTip) {
-							setTip("温馨提示", '发现' + tempName + ' flv视频, 累计发现' + String(Object.keys(videoList).length) + '个视频');
-						}
-						chrome.browserAction.setBadgeText({text: String(Object.keys(videoList).length)});
-						saveVideoList();
+				} else if (RegExp('anime/v').test(request.url)) {
+					tempName = RegExp('anime/v/[0-9]*').exec(request.url)[0].replace('/v/', '');
+					videoList[tempName] = {};
+				} else if (RegExp('.flv').test(request.url)  && !RegExp('get_url').test(request.url) && !RegExp('bstart').test(request.url)) {
+					if (request.url.indexOf('-hd') > -1) {
+						var typeIndex = RegExp('/[0-9]*-[0-9]*-hd').exec(request.url)[0].replace('/', '-');
+					} else {
+						var typeIndex = RegExp('/[0-9]*-[0-9]*').exec(request.url)[0].replace('/', '-');
 					}
-					if (isMp4 && !isDownload) {
+					if (!videoList[tempName]['flv' + typeIndex] && isFlv) {
+						sniff('flv' + typeIndex, isFlv, request);
+					}
+					if (isMp4) {
 						return {cancel: true};
 					}
-				} else if (RegExp('.mp4').test(request.url) && isMp4 && !RegExp('get_url').test(request.url)) {
-					tempType = 'mp4';
-					tempVideo = request.url;
-					videoList[tempName]['mp4'] = tempVideo;
-					tempType = '';
-					tempVideo = '';
-					if (isTip) {
-						setTip("温馨提示", '发现' + tempName + ' mp4视频, 累计发现' + String(Object.keys(videoList).length) + '个视频');
+				} else if (RegExp('.mp4').test(request.url) && !RegExp('get_url').test(request.url) && !RegExp('bstart').test(request.url)) {
+					if (request.url.indexOf('-hd') > -1) {
+						var typeIndex = RegExp('/[0-9]*-[0-9]*-hd').exec(request.url)[0].replace('/', '-');
+					} else {
+						var typeIndex = RegExp('/[0-9]*-[0-9]*').exec(request.url)[0].replace('/', '-');
 					}
-					chrome.browserAction.setBadgeText({text: String(Object.keys(videoList).length)});
-					saveVideoList();
+					if (!videoList[tempName]['mp4' + typeIndex] && isMp4) {
+						sniff('mp4' + typeIndex, isFlv, request);
+					}
 				}
 		    } else {
-		    	console.warn('你没有选择要下载的格式');
+		    	console.log('你没有选择要下载的格式');
 		    }
 		    
 		}, filter1, ['blocking']);
+		console.log('初始化成功');
 	} else {
 	    console.log(err);
 	}
@@ -120,4 +122,20 @@ function saveVideoList() {
 	setStorage({videoList: videoList}, function() {
 
 	});
+}
+
+function sniff(type, boo, req) {
+	if (tempName.length === 0) {
+		return false;
+	}
+	tempType = type;
+	tempVideo = req.url;
+	videoList[tempName][type] = tempVideo;
+	tempType = '';
+	tempVideo = '';
+	if (isTip) {
+		setTip("温馨提示", '发现' + tempName + ' ' + type + '视频, 累计发现' + String(Object.keys(videoList).length) + '个视频');
+	}
+	chrome.browserAction.setBadgeText({text: String(Object.keys(videoList).length)});
+	saveVideoList();
 }
