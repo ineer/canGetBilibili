@@ -35,10 +35,10 @@ function getVideoList() {
         tempHTML += '<li class="tabel-item bilibili-color1">' + i + '</li>';
         for (var j in bgp.videoList[i]) {
             if (j.indexOf('flv') > -1) {
-                tempFlv += '<a href="' + bgp.videoList[i][j] + '" download="' + i + j.split('-')[2] + '.flv">[' + j.split('-')[2] + ']</a>';
+                tempFlv += '<a href="' + bgp.videoList[i][j] + '" download="' + i + '-'  + j.split('-')[2] + '.flv">[' + j.split('-')[2] + ']</a>';
             }
             if (j.indexOf('mp4') > -1) {
-                tempMp4 += '<a href="' + bgp.videoList[i][j] + '" download="' + i + j.split('-')[2] + '.mp4">[' + j.split('-')[2] + ']</a>';
+                tempMp4 += '<a href="' + bgp.videoList[i][j] + '" download="' + i + '-'  + j.split('-')[2] + '.mp4">[' + j.split('-')[2] + ']</a>';
             }
         }
         if (tempFlv.length === 0) {
@@ -48,8 +48,6 @@ function getVideoList() {
             tempMp4 = '-';
         }
         tempHTML += '<li class="tabel-item bilibili-color2">' + tempFlv + '</li>' + '<li class="tabel-item bilibili-color3">' + tempMp4 + '</li>';
-        tempFlv = '';
-        tempMp4 = '';
     }
     
     videoList.innerHTML = tempHTML;

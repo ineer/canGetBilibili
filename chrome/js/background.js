@@ -19,13 +19,14 @@ getStorage({videoList: {}, isFlv: true, isMp4: false, isTip: true}, function(ite
 	isFlv     = items.isFlv;
 	isMp4     = items.isMp4;
 	isTip     = items.isTip;
+	chrome.browserAction.setBadgeText({text: String(Object.keys(videoList).length)});
 });
 
 getFilter(function(err) {
 	if (!err) {
 		chrome.webRequest.onBeforeRequest.addListener(function(request) {
-			
-			if (RegExp('av[0-9]*').test(request.url) || RegExp('anime/v').test(request.url)) {
+
+			if (RegExp('av[0-9]*').test(request.url) || RegExp('anime/v').test(request.url) || RegExp('movie/').test(request.url)) {
 				isDownload = false;
 			}
 
@@ -43,29 +44,34 @@ getFilter(function(err) {
 		    	if (RegExp('av[0-9]*').test(request.url)) {
 					tempName = RegExp('av[0-9]*').exec(request.url)[0]
 							 + (RegExp('_[0-9]*').test(request.url) ? tempName = RegExp('_[0-9]*').exec(request.url)[0] : '');
-					videoList[tempName] = {};
-				} else if (RegExp('anime/v').test(request.url)) {
-					tempName = RegExp('anime/v/[0-9]*').exec(request.url)[0].replace('/v/', '');
-					videoList[tempName] = {};
-				} else if (RegExp('.flv').test(request.url)  && !RegExp('get_url').test(request.url) && !RegExp('bstart').test(request.url)) {
-					if (request.url.indexOf('-hd') > -1) {
-						var typeIndex = RegExp('/[0-9]*-[0-9]*-hd').exec(request.url)[0].replace('/', '-');
-					} else {
-						var typeIndex = RegExp('/[0-9]*-[0-9]*').exec(request.url)[0].replace('/', '-');
+					if (!videoList[tempName]) {
+						videoList[tempName] = {};
 					}
-					if (!videoList[tempName]['flv' + typeIndex] && isFlv) {
+				} else if (RegExp('anime/v').test(request.url)) {
+					if (!tempName) {
+						tempName = RegExp('anime/v/[0-9]*').exec(request.url)[0].replace('/v/', '');
+						if (!videoList[tempName]) {
+							videoList[tempName] = {};
+						}
+					}
+				} else if (RegExp('movie/').test(request.url)) {
+					if (!tempName) {
+						tempName = RegExp('movie/[0-9]*').exec(request.url)[0].replace('/', '');
+						if (!videoList[tempName]) {
+							videoList[tempName] = {};
+						}
+					}
+				} else if (RegExp('.flv').test(request.url)  && !RegExp('get_url').test(request.url) && !RegExp('bstart').test(request.url)) {
+					var typeIndex = getTypeIndex(request);
+					if (typeIndex != '' && !videoList[tempName]['flv' + typeIndex] && isFlv) {
 						sniff('flv' + typeIndex, isFlv, request);
 					}
 					if (isMp4) {
 						return {cancel: true};
 					}
 				} else if (RegExp('.mp4').test(request.url) && !RegExp('get_url').test(request.url) && !RegExp('bstart').test(request.url)) {
-					if (request.url.indexOf('-hd') > -1) {
-						var typeIndex = RegExp('/[0-9]*-[0-9]*-hd').exec(request.url)[0].replace('/', '-');
-					} else {
-						var typeIndex = RegExp('/[0-9]*-[0-9]*').exec(request.url)[0].replace('/', '-');
-					}
-					if (!videoList[tempName]['mp4' + typeIndex] && isMp4) {
+					var typeIndex = getTypeIndex(request);
+					if (typeIndex !='' && !videoList[tempName]['mp4' + typeIndex] && isMp4) {
 						sniff('mp4' + typeIndex, isFlv, request);
 					}
 				}
@@ -81,6 +87,7 @@ getFilter(function(err) {
 });
 
 function getFilter(callback) {
+
 	fetch('https://ineer.github.io/canGetBilibili-rules/filter.json').then(function(res) {
 		if (res.status === 200) {
 			res.json().then(function(json) {
@@ -90,15 +97,16 @@ function getFilter(callback) {
 		} else {
 		    callback({status: res.status});
 		}
+	}).catch(function(err) {
+		console.log(err)
 	});
 }
 
 function clearVideoList() {
 	videoList = {};
 	setStorage({videoList: videoList}, function() {
-
+		chrome.browserAction.setBadgeText({text: ''});
 	});
-	chrome.browserAction.setBadgeText({text: ''});
 }
 
 function setStorage(obj, func) {
@@ -138,4 +146,17 @@ function sniff(type, boo, req) {
 	}
 	chrome.browserAction.setBadgeText({text: String(Object.keys(videoList).length)});
 	saveVideoList();
+}
+
+function getTypeIndex(req) {
+	if (req.url.indexOf('-hd') > -1) {
+		if (RegExp('/[0-9]*-[0-9]*-hd').test(req.url)) {
+			return RegExp('/[0-9]*-[0-9]*-hd').exec(req.url)[0].replace('/', '-');
+		}
+	} else {
+		if (RegExp('/[0-9]*-[0-9]*').test(req.url)) {
+			return RegExp('/[0-9]*-[0-9]*').exec(req.url)[0].replace('/', '-');
+		}
+	}
+	return '';
 }
