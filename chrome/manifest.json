@@ -14,14 +14,14 @@
 		"default_title": "Bilibili视频下载管理",
 		"default_popup": "popup.html"
 	},
-	"options_ui": {
-		"page": "options.html",
-		"chrome_style": true,
-		"open_in_tab": false
-	},
 	"background": {
 		"script": "js/background.js",
 		"page": "background.html"
+	},
+	"options_ui": {
+		"page": "options.html",
+		"chrome_style": true,
+		"open_in_tab": true
 	},
 	"permissions": [
 		"background",

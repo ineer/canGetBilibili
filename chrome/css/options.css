@@ -30,13 +30,28 @@ a:hover {
 
 .tabel-item {
     display: inline-block;
-    width: 33%;
     padding: 2px 0;
+}
+
+.bilibili-color1 {
+    width: 30%;
+}
+
+.bilibili-color2,
+.bilibili-color3 {
+    width: 25%;
+}
+
+.bilibili-color4,
+.bilibili-color5 {
+    width: 10%; 
 }
 
 .bilibili-color1:nth-child(odd),
 .bilibili-color2:nth-child(even),
-.bilibili-color3:nth-child(odd) {
+.bilibili-color3:nth-child(odd),
+.bilibili-color4:nth-child(even),
+.bilibili-color5:nth-child(odd) {
     background-color: rgb(246, 138, 160);
 }
 
